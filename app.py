@@ -137,6 +137,73 @@ female_percent = round(
 ) if total_learners > 0 else 0
 
 # ----------------------------------
+# ADDITIONAL KPI CALCULATIONS
+# ----------------------------------
+
+# Repeat Learners
+repeat_learners = (
+    filtered_df.groupby("UserID")["TransactionID"]
+    .count()
+    .gt(1)
+    .sum()
+)
+
+repeat_percentage = round(
+    (repeat_learners / total_learners) * 100,
+    1
+) if total_learners > 0 else 0
+
+# Beginner %
+beginner_percentage = round(
+    (
+        filtered_df[filtered_df["CourseLevel"] == "Beginner"]
+        .shape[0]
+        / total_enrollments
+    ) * 100,
+    1
+) if total_enrollments > 0 else 0
+
+# Intermediate %
+intermediate_percentage = round(
+    (
+        filtered_df[filtered_df["CourseLevel"] == "Intermediate"]
+        .shape[0]
+        / total_enrollments
+    ) * 100,
+    1
+) if total_enrollments > 0 else 0
+
+# Advanced %
+advanced_percentage = round(
+    (
+        filtered_df[filtered_df["CourseLevel"] == "Advanced"]
+        .shape[0]
+        / total_enrollments
+    ) * 100,
+    1
+) if total_enrollments > 0 else 0
+
+# Category Popularity Index
+category_share = (
+    filtered_df["CourseCategory"]
+    .value_counts(normalize=True)
+    .mul(100)
+    .round(1)
+)
+
+category_popularity = (
+    f"{category_share.iloc[0]}%"
+    if not category_share.empty else "0%"
+)
+
+# Active User Ratio
+active_user_ratio = round(
+    (repeat_learners / total_learners) * 100,
+    1
+) if total_learners > 0 else 0
+
+
+# ----------------------------------
 # KPI SECTION
 # ----------------------------------
 
@@ -172,8 +239,88 @@ with col8:
         "👥 Gender Ratio",
         f"M {male_percent}% | F {female_percent}%"
     )
+    
+    
+col9, col10, col11, col12 = st.columns(4)
+
+with col9:
+    st.metric(
+        "🔁 Repeat Learners",
+        repeat_learners
+    )
+
+with col10:
+    st.metric(
+        "🎯 Active User Ratio",
+        f"{active_user_ratio}%"
+    )
+
+with col11:
+    st.metric(
+        "📈 Beginner %",
+        f"{beginner_percentage}%"
+    )
+
+with col12:
+    st.metric(
+        "⭐ Intermediate %",
+        f"{intermediate_percentage}%"
+    )
+    
+col13, col14 = st.columns(2)
+
+with col13:
+    st.metric(
+        "🚀 Advanced %",
+        f"{advanced_percentage}%"
+    )
+
+with col14:
+    st.metric(
+        "🏆 Category Popularity Index",
+        category_popularity
+    )        
 
 st.markdown("---")
+
+
+
+kpi_summary = pd.DataFrame({
+    "KPI": [
+        "Total Learners",
+        "Total Courses",
+        "Total Enrollments",
+        "Average Courses",
+        "Average Age",
+        "Gender Ratio",
+        "Repeat Learners",
+        "Active User Ratio",
+        "Beginner %",
+        "Intermediate %",
+        "Advanced %",
+        "Category Popularity"
+    ],
+    "Value": [
+        total_learners,
+        total_courses,
+        total_enrollments,
+        avg_courses,
+        avg_age,
+        f"M {male_percent}% | F {female_percent}%",
+        repeat_learners,
+        f"{active_user_ratio}%",
+        f"{beginner_percentage}%",
+        f"{intermediate_percentage}%",
+        f"{advanced_percentage}%",
+        category_popularity
+    ]
+})
+
+st.dataframe(
+    kpi_summary,
+    use_container_width=True,
+    hide_index=True
+)
 
 
 # ==========================================================
