@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 import plotly.graph_objects as go
 
 # ----------------------------------
@@ -23,16 +24,31 @@ st.markdown("---")
 
 @st.cache_data
 def load_data():
-    df = pd.read_excel("Merged_EduPro.xlsx")
+    try:
+        # Load individual relational sheets
+        xls = pd.ExcelFile("EduPro Online Platform.xlsx")
+        users = pd.read_excel(xls, "Users")
+        courses = pd.read_excel(xls, "Courses")
+        transactions = pd.read_excel(xls, "Transactions")
 
-    # Convert Transaction Date
+        # Programmatic Data Integration (Users ↔ Transactions ↔ Courses)
+        df = transactions.merge(users, on="UserID", how="left").merge(courses, on="CourseID", how="left")
+    except Exception:
+        # Fallback to pre-merged dataset
+        df = pd.read_excel("Merged_EduPro.xlsx")
+
+    # Date Transformations & Feature Engineering
     df["TransactionDate"] = pd.to_datetime(df["TransactionDate"])
-
     df["Month"] = df["TransactionDate"].dt.strftime("%b")
     df["Year"] = df["TransactionDate"].dt.year
 
-    return df
+    # Ensure AgeGroup binning consistency
+    if "AgeGroup" not in df.columns:
+        bins = [0, 17, 25, 35, 45, 100]
+        labels = ["<18", "18–25", "26–35", "36–45", "45+"]
+        df["AgeGroup"] = pd.cut(df["Age"], bins=bins, labels=labels)
 
+    return df
 df = load_data()
 
 # ----------------------------------
@@ -321,6 +337,14 @@ st.dataframe(
     use_container_width=True,
     hide_index=True
 )
+
+
+# Mode calculation fix for popular category & level
+cat_mode = filtered_df["CourseCategory"].mode() if not filtered_df.empty else pd.Series()
+popular_category = cat_mode.iloc[0] if not cat_mode.empty else "-"
+
+level_mode = filtered_df["CourseLevel"].mode() if not filtered_df.empty else pd.Series()
+popular_level = level_mode.iloc[0] if not level_mode.empty else "-"
 
 
 # ==========================================================
