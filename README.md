@@ -369,3 +369,9 @@ Feel free to fork, improve, and contribute.
 ---
 
 ⭐ If you found this project useful, consider giving it a **Star** on GitHub.
+
+
+## Live Dashboard
+
+Open the EduPro Dashboard:
+https://edupro-dashboard-pdj2d5xsccaahatv4aqs3z.streamlit.app/
