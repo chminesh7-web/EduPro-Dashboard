@@ -352,7 +352,7 @@ Through this project, the following concepts were implemented:
 
 # 👨‍💻 Author
 
-**Minesh Naidu**
+**Cheerla Minesh**
 
 B.Tech – Artificial Intelligence & Machine Learning
 
